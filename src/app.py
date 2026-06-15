@@ -62,6 +62,15 @@ def signup_for_activity(activity_name: str, email: str):
     # Get the specific activity
     activity = activities[activity_name]
 
+    # Prevent duplicate signups
+    if email in activity.get("participants", []):
+        raise HTTPException(status_code=400, detail="Student already signed up for this activity")
+
+    # Enforce max participants if configured
+    max_p = activity.get("max_participants")
+    if isinstance(max_p, int) and len(activity.get("participants", [])) >= max_p:
+        raise HTTPException(status_code=400, detail="Activity is full")
+
     # Add student
-    activity["participants"].append(email)
+    activity.setdefault("participants", []).append(email)
     return {"message": f"Signed up {email} for {activity_name}"}
